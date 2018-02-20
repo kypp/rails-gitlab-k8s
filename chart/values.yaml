@@ -1,0 +1,20 @@
+replicaCount: 1
+image:
+  repository: gitlab.example.com/group/project
+  tag: stable
+  pullPolicy: Always
+  secrets:
+    - name: gitlab-registry
+application:
+  track: stable
+  tier: web
+service:
+  enabled: true
+  name: web
+  type: ClusterIP
+  url: http://my.host.com/
+  externalPort: 3000
+  internalPort: 3000
+postgresql:
+  enabled: true
+  imageTag: 10.2
