@@ -6,7 +6,12 @@ RUN apk add --update tzdata && \
     echo "Europe/Warsaw" > /etc/timezone
 
 # Install runtime dependencies
-RUN apk add --update --virtual runtime-deps postgresql-client nodejs libffi-dev readline sqlite yarn
+RUN apk add --update --virtual runtime-deps postgresql-client nodejs libffi-dev readline sqlite && \
+    mkdir /tmp/yarn && cd /tmp/yarn && \
+    wget -qO- https://github.com/yarnpkg/yarn/releases/download/v1.5.1/yarn-v1.5.1.tar.gz | tar xz --strip-components 1 && \
+    cp bin/* /usr/bin/ && \
+    cp lib/* /usr/lib/ && \
+    cd / && rm -rf /tmp/yarn    
 
 # Install build-time dependencies
 RUN apk add --virtual build-deps build-base libressl-dev postgresql-dev libc-dev linux-headers libxml2-dev libxslt-dev readline-dev
