@@ -2,31 +2,50 @@ version: '3'
 
 services:
   db:
-    image: postgres:10.2
+    image: postgres:10.3-alpine
     environment:
+      - POSTGRES_DB=development
+      - PGDATA=/var/lib/postgresql/data
       - POSTGRES_PASSWORD=johann_gambolputty
-      - DB_NAME=development
-  web:
-    build: .
+  setup:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - db
     environment:
-      - RAILS_ENV=development
-      - NODE_ENV=development
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=johann_gambolputty
+    volumes:
+      - .:/app
+    command: "rails db:migrate || rails db:setup"
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: "rails s -p 3000 -b 0.0.0.0"
+    environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=johann_gambolputty
     ports:
       - '3000:3000'
     volumes:
       - .:/app
-    links:
+      - /app/node_modules
+    depends_on:
+      - setup
       - db
   webpacker:
-    build: .
-    environment:
-      - RAILS_ENV=development
-      - NODE_ENV=development
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: bin/webpack-dev-server
+    environment: 
       - WEBPACKER_DEV_SERVER_HOST=0.0.0.0
-    command: bundle exec webpack-dev-server
     volumes:
       - .:/app
+      - /app/node_modules
     ports:
       - '3035:3035'
+    depends_on:
+      - setup

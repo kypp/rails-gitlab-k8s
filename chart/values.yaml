@@ -17,4 +17,4 @@ service:
   internalPort: 3000
 postgresql:
   enabled: true
-  imageTag: 10.2
+  imageTag: 10.3

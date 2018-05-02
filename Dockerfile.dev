@@ -1,0 +1,41 @@
+FROM ruby:2.5.1-alpine
+
+# Set local timezone and install runtime packages
+RUN apk --no-cache add tzdata postgresql-client nodejs && \
+    cp /usr/share/zoneinfo/Europe/Warsaw /etc/localtime && \
+    echo "Europe/Warsaw" > /etc/timezone
+
+# Install build-time dependencies
+RUN apk --no-cache add build-base libressl-dev postgresql-dev libc-dev linux-headers libxml2-dev libxslt-dev readline-dev git && \
+    cd /tmp && \
+    mkdir yarn && cd yarn && \
+    wget -qO- https://github.com/yarnpkg/yarn/releases/download/v1.6.0/yarn-v1.6.0.tar.gz | tar xz --strip-components 1 && \
+    cp bin/* /usr/bin/ && \
+    cp lib/* /usr/lib/
+
+# Go to app dir
+ENV APP_HOME /app
+WORKDIR $APP_HOME
+
+# Bundle into app directory
+ADD Gemfile* ./
+RUN bundle install --jobs=4
+
+# Install js packages
+COPY package.json yarn.lock ./
+RUN yarn install
+
+# Configure development environment variables
+ENV RAILS_ENV=development \
+    RACK_ENV=development \
+    NODE_ENV=development \
+    RAILS_LOG_TO_STDOUT=true
+
+# Expose port 3000
+EXPOSE 3000
+
+# copy entrypoint
+COPY docker-entrypoint.sh /usr/local/bin
+
+# Run entrypoint
+ENTRYPOINT ["docker-entrypoint.sh"]
