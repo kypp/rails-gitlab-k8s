@@ -14,18 +14,16 @@ services:
     depends_on:
       - db
     environment:
-      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=johann_gambolputty
     volumes:
       - .:/app
-    command: "rails db:migrate || rails db:setup"
+    command: "rails db:exists && rails db:migrate || rails db:setup"
   web:
     build:
       context: .
       dockerfile: Dockerfile.dev
     command: "rails s -p 3000 -b 0.0.0.0"
     environment:
-      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=johann_gambolputty
     ports:
       - '3000:3000'
