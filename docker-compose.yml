@@ -2,27 +2,16 @@ version: '3'
 
 services:
   db:
-    image: postgres:10.3-alpine
+    image: postgres:10.4-alpine
     environment:
       - POSTGRES_DB=development
       - PGDATA=/var/lib/postgresql/data
       - POSTGRES_PASSWORD=johann_gambolputty
-  setup:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    depends_on:
-      - db
-    environment:
-      - POSTGRES_PASSWORD=johann_gambolputty
-    volumes:
-      - .:/app
-    command: "rails db:exists && rails db:migrate || rails db:setup"
   web:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    command: "rails s -p 3000 -b 0.0.0.0"
+    command: "server"
     environment:
       - POSTGRES_PASSWORD=johann_gambolputty
     ports:
@@ -31,7 +20,6 @@ services:
       - .:/app
       - /app/node_modules
     depends_on:
-      - setup
       - db
   webpacker:
     build:
@@ -45,5 +33,3 @@ services:
       - /app/node_modules
     ports:
       - '3035:3035'
-    depends_on:
-      - setup
